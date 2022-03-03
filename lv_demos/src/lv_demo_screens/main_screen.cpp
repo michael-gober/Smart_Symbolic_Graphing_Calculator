@@ -1,14 +1,28 @@
 #include "calculator_screens.hxx"
 #include "tabs.hxx"
+//#include <giac/global.h>
 #include <stdio.h>
+#include <string>
+#include <sstream>
+#include <unistd.h>
+#include <giac/config.h>
+#include <giac/gen.h>
+//#include <giac/unary.h>
+#include <giac/giac.h>
+
+
+#include <iostream>
+#include <gmpxx.h>
+#include <sstream>
 //#if LV_USE_TEXTAREA && LV_BUILD_EXAMPLES
 
 /*Declarations*/
 lv_obj_t* lv_textarea_input(lv_obj_t* parent);
-lv_obj_t* lv_textarea_output(lv_obj_t* parent);
+lv_obj_t* lv_textarea_output(lv_obj_t* parent, std::string output);
 static void kb_event_cb(lv_event_t* e);
 static void toggle_kb_event_handler(lv_event_t* e);
 void main_screen_driver(lv_obj_t* parent);
+std::string call_giac(std::string input, giac::context ctx);
 
 /*Areas holds a list of pointers to the active text areas.
   (1 Input, 1 Output) = 1 Entry to the calculator.
@@ -19,11 +33,20 @@ int total;
 
 static lv_obj_t* kb;
 static lv_obj_t* toggle_kb_btn;
+#include <stdio.h>
+#include <giac/config.h>
+#include <giac/gen.h>
+//#include <giac/unary.h>
+#include <giac/giac.h>
+//#include <gmpxx.h> 
+#include <iostream>
+#include <sstream>
 
+giac::context ctx;
 
 void main_screen_driver(lv_obj_t* parent)
 {
-
+    //giac::context ctx;
     total = 0;
     /*Create a keyboard*/
     kb = lv_keyboard_create(parent);
@@ -70,15 +93,18 @@ static void textarea_event_handler(lv_event_t* e)
             for(uint32_t i = 0; i < lv_obj_get_child_cnt(parent); i++)
             {
                 lv_obj_clean(parent);
-                main_screen_driver(parent);
-                return;
             }
+            main_screen_driver(parent);
+            return;
         }
         LV_LOG_USER("Ready, current text: %s", lv_textarea_get_text(ta));
+        std::string input = lv_textarea_get_text(ta);
+        //giac::context ctx;
+        std::string output = call_giac(input, ctx);
         
         /*Create the new text areas*/
-        lv_textarea_output(parent);
-        lv_textarea_input(parent);
+        lv_textarea_output(parent, output);
+        //lv_textarea_input(parent);
         
         /*Put kb in view*/
         lv_obj_align_to(kb, parent, LV_ALIGN_BOTTOM_MID, 0, 10);
@@ -148,20 +174,20 @@ lv_obj_t* lv_textarea_input(lv_obj_t* parent)
 
 }
 
-lv_obj_t* lv_textarea_output(lv_obj_t* parent)
+lv_obj_t* lv_textarea_output(lv_obj_t* parent, std::string output)
 {
     lv_obj_t* ta = lv_textarea_create(parent);
     areas[total] = ta;
     total++;
-    char str[50];
-    sprintf(str, "Answer: %d", total/2);
+    //char str[50];
+    //sprintf(str, "Answer: %d", total/2);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_width(ta, 320);
     lv_obj_align(ta, LV_ALIGN_BOTTOM_MID, 0, ( 35 * total));
     lv_obj_add_event_cb(ta, textarea_event_handler, LV_EVENT_READY, NULL);
     lv_obj_add_state(ta, LV_STATE_DEFAULT); /*To be sure the cursor is visible*/
     lv_obj_set_style_text_align(ta, LV_TEXT_ALIGN_RIGHT, 0);
-    lv_textarea_add_text(ta, str);
+    lv_textarea_add_text(ta, output.c_str());
     if (!lv_obj_has_flag(kb, LV_OBJ_FLAG_HIDDEN))
     {
         lv_obj_set_y(ta, lv_obj_get_y_aligned(ta) - 80);
@@ -169,4 +195,17 @@ lv_obj_t* lv_textarea_output(lv_obj_t* parent)
     return ta;
 }
 
-//#endif
+std::string call_giac(std::string input, giac::context ctx)
+{      
+        giac::gen g(input, &ctx);
+        std::cout << giac::eval(g, &ctx) << "\n";    
+        giac::gen args(input, &ctx);
+        std::string output = input + "\n";
+        try{
+            output = giac::gen2string(giac::eval(args, &ctx));
+        }
+        catch(...){
+            output = "ERROR: Something went wrong!\n";
+        }
+        return output;
+}
