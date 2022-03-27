@@ -343,6 +343,8 @@ static void Calculator::active_ta_event_handler(lv_event_t* e)
     {
         /*Focus on the clicked text area*/
         if (kb != NULL) lv_keyboard_set_textarea(kb, ta);
+		lv_obj_scroll_to_view(ta, LV_ANIM_OFF);
+		lv_obj_scroll_by(parent, 0, 15, LV_ANIM_OFF);
     }
     else if (code == LV_EVENT_READY)
     {
@@ -364,8 +366,8 @@ static void Calculator::active_ta_event_handler(lv_event_t* e)
         const char *copy_input = lv_textarea_get_text(ta);
         
         /*Create the new text areas*/
-        Calculator::lv_input_history_ta(parent, copy_input);
-	    Calculator::lv_result_ta(parent, output);
+        Calculator::lv_input_history_ta(parent, copy_input, ta);
+	    Calculator::lv_result_ta(parent, output, ta);
         lv_obj_align(ta, LV_ALIGN_BOTTOM_MID, 0, ( 35 * total) + 35);
         lv_textarea_set_text(ta, "");
         lv_obj_scroll_to_view(ta, LV_ANIM_OFF);
@@ -380,6 +382,19 @@ static void Calculator::active_ta_event_handler(lv_event_t* e)
         lv_obj_scroll_by(parent, 0, 15, LV_ANIM_OFF);
     }
 
+}
+
+static void Calculator::input_history_ta_event_handler(lv_event_t* e)
+{
+	lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t* ta = lv_event_get_target(e);
+	lv_obj_t* active_ta = static_cast<lv_obj_t*>(lv_event_get_user_data(e));
+
+	if (code == LV_EVENT_CLICKED || code == LV_EVENT_FOCUSED)
+	{
+		const char *copy_input = lv_textarea_get_text(ta);
+		lv_textarea_set_text(active_ta, copy_input);
+	}	
 }
 
 
@@ -435,7 +450,7 @@ static void Calculator::toggle_kb_event_handler(lv_event_t* e)
 
 
 /*Graphical widget functions*/
-lv_obj_t* Calculator::lv_input_history_ta(lv_obj_t* parent, std::string input)
+lv_obj_t* Calculator::lv_input_history_ta(lv_obj_t* parent, std::string input, lv_obj_t* active_ta)
 {
     lv_obj_t* ta = lv_textarea_create(parent);
     areas[total] = ta;
@@ -451,17 +466,16 @@ lv_obj_t* Calculator::lv_input_history_ta(lv_obj_t* parent, std::string input)
     {
         lv_obj_set_y(ta, lv_obj_get_y_aligned(ta) - 80);
     }
+	lv_obj_add_event_cb(ta, input_history_ta_event_handler, LV_EVENT_ALL, active_ta);
     return ta;
 
 }
 
-lv_obj_t* Calculator::lv_result_ta(lv_obj_t* parent, std::string output)
+lv_obj_t* Calculator::lv_result_ta(lv_obj_t* parent, std::string output, lv_obj_t* active_ta)
 {
     lv_obj_t* ta = lv_textarea_create(parent);
     areas[total] = ta;
     total++;
-    //char str[50];
-    //sprintf(str, "Answer: %d", total/2);
     lv_textarea_set_one_line(ta, true);
     lv_obj_set_width(ta, 320);
     lv_obj_align(ta, LV_ALIGN_BOTTOM_MID, 0, ( 35 * total));
@@ -473,6 +487,7 @@ lv_obj_t* Calculator::lv_result_ta(lv_obj_t* parent, std::string output)
     {
         lv_obj_set_y(ta, lv_obj_get_y_aligned(ta) - 80);
     }
+	lv_obj_add_event_cb(ta, input_history_ta_event_handler, LV_EVENT_ALL, active_ta);
     return ta;
 }
 void Calculator::storeFunctionTA(lv_obj_t* ta){

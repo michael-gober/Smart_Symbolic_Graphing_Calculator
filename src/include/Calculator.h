@@ -30,8 +30,8 @@ namespace Calculator{
 	lv_obj_t* lv_textarea_input(lv_obj_t* parent);
     	lv_obj_t* lv_textarea_output(lv_obj_t* parent);
     	void main_screen_driver(lv_obj_t* parent);
-	lv_obj_t* lv_input_history_ta(lv_obj_t* parent, std::string output);
-	lv_obj_t* lv_result_ta(lv_obj_t* parent, std::string output);	
+	lv_obj_t* lv_input_history_ta(lv_obj_t* parent, std::string output, lv_obj_t* active_ta);
+	lv_obj_t* lv_result_ta(lv_obj_t* parent, std::string output, lv_obj_t* active_ta);	
 	static void kb_event_cb(lv_event_t* e);
 	static void toggle_kb_event_handler(lv_event_t* e);
 	void main_screen_driver(lv_obj_t* parent);
@@ -39,6 +39,7 @@ namespace Calculator{
 	void storeFunctionTA(lv_obj_t* ta);
 	void storeWifiTA(lv_obj_t* ta);
 	static void clear_scr_btn_event_handler(lv_event_t* e);
+	static void input_history_ta_event_handler(lv_event_t* e);
 
 	
 }
