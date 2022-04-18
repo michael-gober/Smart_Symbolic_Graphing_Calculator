@@ -26,6 +26,7 @@
 #include <gmpxx.h>
 #include <nlohmann/json.hpp>
 #include <ctime>
+#include <state.hxx>
 
 namespace Calculator{
     void createDemo();

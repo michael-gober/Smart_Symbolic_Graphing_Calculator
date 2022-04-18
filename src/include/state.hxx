@@ -164,6 +164,13 @@ namespace calc_state{
             {"data", _ph}
         };
 
+        const json clientLog = {
+            {"ssgcType", _ph},
+            {"clientIP", _ph},
+            {"clientName", _ph},
+            {"data", _ph}
+        };
+
         bool validate(json const& obj, json const& schema);
         
     }
@@ -182,6 +189,7 @@ namespace calc_state{
         void take_screenshot();
         void screenshot_handle();
         bool connect_to_admin_app(admin_app::AdminInfo& admin);
+        friend void clientLog_handler(lv_event_t* e, State* state);
         
         friend void screenshot_cb(State* state);
     };
