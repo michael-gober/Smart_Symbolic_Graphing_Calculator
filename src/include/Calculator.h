@@ -38,6 +38,7 @@ namespace Calculator{
 	static void active_ta_event_handler(lv_event_t* e);
 	void storeFunctionTA(lv_obj_t* ta);
 	void storeWifiTA(lv_obj_t* ta);
+	static void clear_scr_btn_event_handler(lv_event_t* e);
 
 	
 }
