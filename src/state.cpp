@@ -362,28 +362,6 @@ _STATE(void) screenshot_handle(){
     as.send_data(data.dump());
 }
 
-_STATE_CALLBACK clientLog_handler(lv_event_t* e, State* state)
-{
-    std::cout << "testing client log" << std::endl;
-    if (!state->as.is_connected()) return;
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t* ta = lv_event_get_target(e);
-    std::cout << "testing client log" << std::endl;
-    if(code == LV_EVENT_READY)
-    {
-        std::cout << "testing client log" << std::endl;
-        json::json data = json::clientLog;
-        data["ssgcType"] = "calculationLog";
-        data["clientIP"] = state->ws.ip().value();
-        data["clientName"] = "UNKNOWN";
-        std::string text = std::string(lv_textarea_get_text(e->target));
-        data["data"] = base64_encode((const unsigned char*)text.c_str(), sizeof(text.c_str()), false);
-        state->as.send_data(data.dump());
-    }
-    
-
-}
-
 _STATE(bool) connect_to_admin_app(admin_app::AdminInfo& admin){
     if (!as.is_connected()){
         std::cout << "CONNECTING TO " << admin.name << " AT " << admin.ip << ":" << admin.port << "\n";

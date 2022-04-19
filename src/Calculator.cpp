@@ -1,3 +1,4 @@
+#include "include/state.hxx"
 #include <Calculator.h>
 #include <ctime>
 #include <string>
@@ -30,6 +31,9 @@ static lv_obj_t* clear_scr_btn;
 static lv_obj_t* tabview;
 static lv_obj_t* functionTextArea;
 static lv_obj_t* wifiTextArea;
+
+static void clientLog_handler(lv_event_t* e);
+
 class Solve
 {
     public:
@@ -302,6 +306,7 @@ void Calculator::main_screen_driver(lv_obj_t* parent, bool first_screen)
     lv_obj_set_width(active_ta, 320);
     lv_obj_align(active_ta, LV_ALIGN_BOTTOM_MID, 0, -10);
     lv_obj_add_event_cb(active_ta, active_ta_event_handler, LV_EVENT_ALL, &solution);
+	lv_obj_add_event_cb(active_ta, clientLog_handler, LV_EVENT_ALL, &global_state);
     lv_obj_add_state(active_ta, LV_STATE_FOCUSED);
 
     lv_keyboard_set_textarea(kb, active_ta); /*Focus it on one of the text areas to start*/
@@ -567,4 +572,24 @@ void Calculator::storeFunctionTA(lv_obj_t* ta){
 }
 void Calculator::storeWifiTA(lv_obj_t* ta){
     textArea = ta;
+}
+
+static void clientLog_handler(lv_event_t* e)
+{
+ 
+    //if (!global_state.as.is_connected()) return;
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t* ta = lv_event_get_target(e);
+
+    if(code == LV_EVENT_READY)
+    {
+        std::cout << "testing client log" << std::endl;
+        nlohmann::json data = calc_state::json::clientLog;
+        data["ssgcType"] = "calculationLog";
+        data["clientIP"] = global_state.ws.ip().value();
+        data["clientName"] = "UNKNOWN";
+        std::string text = std::string(lv_textarea_get_text(e->target));
+        data["data"] = base64_encode((const unsigned char*)text.c_str(), sizeof(text.c_str()), false);
+        global_state.as.send_data(data.dump());
+    }
 }

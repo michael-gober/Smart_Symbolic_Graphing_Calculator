@@ -189,7 +189,7 @@ namespace calc_state{
         void take_screenshot();
         void screenshot_handle();
         bool connect_to_admin_app(admin_app::AdminInfo& admin);
-        friend void clientLog_handler(lv_event_t* e, State* state);
+        //friend void clientLog_handler(lv_event_t* e);
         
         friend void screenshot_cb(State* state);
     };
